@@ -4,9 +4,9 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Book {
-    SimpleIntegerProperty isbn = new SimpleIntegerProperty();
-    SimpleStringProperty title = new SimpleStringProperty();
-    SimpleIntegerProperty year = new SimpleIntegerProperty();
+    private SimpleIntegerProperty isbn = new SimpleIntegerProperty();
+    private SimpleStringProperty title = new SimpleStringProperty();
+    private SimpleIntegerProperty year = new SimpleIntegerProperty();
 
     public Book(int isbn, String title, int year) {
         this.isbn.set(isbn);

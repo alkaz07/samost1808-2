@@ -1,6 +1,7 @@
 package com.example.samost18082;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -10,8 +11,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class HelloController {
 
@@ -24,6 +30,7 @@ public class HelloController {
     Button saveBtn;
 
     public void initialize() throws SQLException {
+        enableChangeTracking();
         try {
             zapolnitBooksFromDB();
         } catch (SQLException e) {
@@ -31,12 +38,26 @@ public class HelloController {
         }
         initTable();
 
-        startChangeTracking();
+        //startChangeTracking();
 
         saveBtn.setOnAction(actionEvent -> {
-            System.out.println(isbnMap);}
-
+            System.out.println(isbnMap);
+            writeChangedIsbns("out.txt");}
         );
+    }
+
+
+    public void writeChangedIsbns(String fname)
+    {
+        try {
+            List<Integer> keyList = new ArrayList(isbnMap.keySet());
+            Files.write(new File(fname).toPath(), keyList.toString().getBytes());
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("aaaaaaa "+e.getMessage());
+        }
     }
 
     public void startChangeTracking(){
@@ -46,7 +67,23 @@ public class HelloController {
         }
     }
 
+    public void enableChangeTracking(){
+        books.addListener((ListChangeListener<Book>) change -> {
+            while(change.next())
+            {
+                if (change.wasAdded())
+                    for (Book b: change.getAddedSubList() ) {
+                        b.titleProperty().addListener((val, o, n)->  isbnMap.put(b.getIsbn(), b) );
+                        b.yearProperty().addListener( (val, o, n)->  isbnMap.put(b.getIsbn(), b) );
+                    }
+            }
+        });
+    }
+
+    @FXML
     private void zapolnitBooksFromDB() throws SQLException {
+        books.clear();
+        isbnMap.clear();
         Connection conn =  connectToDB();
         Statement st = conn.createStatement();
         ResultSet rs = st.executeQuery("SELECT isbn, title, year FROM book ORDER BY title");
@@ -100,6 +137,22 @@ public class HelloController {
         }
     }
 
-
+    @FXML
+    public void saveChangesToDB() throws SQLException {
+        Connection conn =  connectToDB();
+        //Statement st = conn.createStatement();
+        PreparedStatement pst = conn.prepareStatement("UPDATE book SET title = ? , year = ? WHERE isbn = ? ");
+        for (Book b: isbnMap.values()    ) {
+            //String query = "UPDATE book SET title = '"+ b.getTitle() +"' , year = "+b.getYear()+" where isbn = "+b.getIsbn();
+            //st.execute(query);
+            pst.setString(1, b.getTitle());
+            pst.setInt(   2, b.getYear() );
+            pst.setInt(   3, b.getIsbn() );
+            pst.execute();
+            System.out.println(pst.toString());
+        }
+        pst.close();
+        //st.close();
+    }
 
 }

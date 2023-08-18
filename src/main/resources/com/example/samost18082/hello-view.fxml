@@ -14,5 +14,7 @@
         </columns>
       </TableView>
       <Button fx:id="saveBtn" layoutX="616.0" layoutY="174.0" mnemonicParsing="false" text="SAVE" />
+      <Button fx:id="btnSaveToDB" layoutX="600.0" layoutY="217.0" mnemonicParsing="false" onAction="#saveChangesToDB" prefHeight="61.0" prefWidth="77.0" text="SAVE to DB" textFill="RED" />
+      <Button layoutX="606.0" layoutY="87.0" mnemonicParsing="false" onAction="#zapolnitBooksFromDB" prefHeight="40.0" prefWidth="64.0" text="REFRESH" />
    </children>
 </AnchorPane>
